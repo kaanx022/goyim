@@ -18,8 +18,15 @@ jobs:
           java-version: '8'
           distribution: 'temurin'
 
+#      - name: Setup Android SDK
+#        uses: android-actions/setup-android@v2
+
+
       - name: Setup Android SDK
         uses: android-actions/setup-android@v2
+        with:
+          java-version: '8'
+
 
       - name: Install System Image and Create AVD
         run: |
