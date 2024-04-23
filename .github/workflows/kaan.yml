@@ -1,41 +1,47 @@
-name: the goyim know
+name: Android AVD Setup
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
 
 jobs:
   setup_avd:
     runs-on: ubuntu-latest
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v2
 
-    - name: Set up JDK 11
-      uses: actions/setup-java@v2
-      with:
-        java-version: '11'
-        distribution: 'adopt'
+      - name: Install SDKMAN and Java
+        run: |
+          curl -s "https://get.sdkman.io" | bash
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
+          sdk install java 8.0.402-amzn
+          sdk use java 8.0.402-amzn
 
-    - name: Install Android SDK
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y android-sdk
+      - name: Install Android SDK
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y android-sdk
 
-    - name: Set Environment Variables
-      run: |
-        echo "ANDROID_HOME=/usr/lib/android-sdk" >> $GITHUB_ENV
-        echo "$ANDROID_HOME/tools/bin" >> $GITHUB_PATH
-        echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
+      - name: Set Environment Variables
+        run: |
+          echo "ANDROID_HOME=/usr/lib/android-sdk" >> $GITHUB_ENV
+          echo "$ANDROID_HOME/tools/bin" >> $GITHUB_PATH
+          echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
 
-    - name: Install System Image
-      run: |
-        sudo $ANDROID_HOME/tools/bin/sdkmanager "system-images;android-24;default;x86"
+      - name: Install System Image
+        run: |
+          sdk use java 8.0.402-amzn
+          sudo $ANDROID_HOME/tools/bin/sdkmanager "system-images;android-24;default;x86"
 
-    - name: Create AVD
-      run: |
-        echo "no" | sudo $ANDROID_HOME/tools/bin/avdmanager create avd --name maestro_shard_1 --abi "x86" --package "system-images;android-24;default;x86" --force
+      - name: Create AVD
+        run: |
+          sdk use java 8.0.402-amzn
+          echo "no" | sudo $ANDROID_HOME/tools/bin/avdmanager create avd --name maestro_shard_1 --abi "x86" --package "system-images;android-24;default;x86" --force
 
-    - name: Launch Emulator
-      run: |
-        sudo $ANDROID_HOME/emulator/emulator -avd maestro_shard_1 -no-audio -no-boot-anim -no-window &
-        sleep 30 # Wait for emulator to start
-
+      - name: Launch Emulator
+        run: |
+          sdk use java 8.0.402-amzn
+          sudo $ANDROID_HOME/emulator/emulator -avd maestro_shard_1 -no-audio -no-boot-anim -no-window &
+          sleep 30 # Wait for emulator to start
