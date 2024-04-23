@@ -3,7 +3,7 @@ name: Android AVD Setup
 on:
   push:
     branches:
-      - "*"
+      - master
 
 jobs:
   setup_avd:
@@ -30,18 +30,16 @@ jobs:
           echo "$ANDROID_HOME/tools/bin" >> $GITHUB_PATH
           echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
 
-      - name: Install System Image
+      - name: Install System Image and Create AVD
         run: |
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
           sdk use java 8.0.402-amzn
           sudo $ANDROID_HOME/tools/bin/sdkmanager "system-images;android-24;default;x86"
-
-      - name: Create AVD
-        run: |
-          sdk use java 8.0.402-amzn
           echo "no" | sudo $ANDROID_HOME/tools/bin/avdmanager create avd --name maestro_shard_1 --abi "x86" --package "system-images;android-24;default;x86" --force
 
       - name: Launch Emulator
         run: |
+          source "$HOME/.sdkman/bin/sdkman-init.sh"
           sdk use java 8.0.402-amzn
           sudo $ANDROID_HOME/emulator/emulator -avd maestro_shard_1 -no-audio -no-boot-anim -no-window &
           sleep 30 # Wait for emulator to start
