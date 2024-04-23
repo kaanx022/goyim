@@ -1,1 +1,1 @@
-# goyim
+# THE GOYIM KNOW
