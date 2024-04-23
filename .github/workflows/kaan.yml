@@ -12,37 +12,20 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Setup Java with SDKMAN
-        run: |
-          curl -s "https://get.sdkman.io" | bash
-          source "$HOME/.sdkman/bin/sdkman-init.sh"
-          sdk install java 8.0.402-amzn
-          sdk use java 8.0.402-amzn
-
-      - name: Cache Android SDK
-        uses: actions/cache@v2
+      - name: Setup JDK
+        uses: actions/setup-java@v2
         with:
-          path: |
-            ${{ github.workspace }}/android-sdk
-          key: ${{ runner.os }}-android-sdk-24
+          java-version: '8'
+          distribution: 'adopt'
 
       - name: Setup Android SDK
-        run: |
-          if [ ! -d "${{ github.workspace }}/android-sdk" ]; then
-            wget -q "https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip" -O sdk.zip
-            unzip sdk.zip -d ${{ github.workspace }}/android-sdk
-            echo "${{ github.workspace }}/android-sdk/tools/bin" >> $GITHUB_PATH
-            echo "${{ github.workspace }}/android-sdk/platform-tools" >> $GITHUB_PATH
-            echo "ANDROID_HOME=${{ github.workspace }}/android-sdk" >> $GITHUB_ENV
-            yes | ${{ github.workspace }}/android-sdk/tools/bin/sdkmanager --licenses
-            ${{ github.workspace }}/android-sdk/tools/bin/sdkmanager "system-images;android-24;default;x86"
-          fi
+        uses: android-actions/setup-android@v2
 
-      - name: Create AVD
+      - name: Install System Image and Create AVD
         run: |
-          echo "no" | ${{ github.workspace }}/android-sdk/tools/bin/avdmanager create avd --name maestro_shard_1 --abi "x86" --package "system-images;android-24;default;x86" --force
+          echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd --name maestro_shard_1 --abi "x86" --package "system-images;android-24;default;x86" --force
 
       - name: Launch Emulator
         run: |
-          ${{ github.workspace }}/android-sdk/emulator/emulator -avd maestro_shard_1 -no-audio -no-boot-anim -no-window &
+          $ANDROID_HOME/emulator/emulator -avd maestro_shard_1 -no-audio -no-boot-anim -no-window &
           sleep 30 # Wait for emulator to start
