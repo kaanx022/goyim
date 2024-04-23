@@ -3,8 +3,7 @@ name: Android AVD Setup
 on:
   push:
     branches:
-      - master
-      - dev
+      - "*"
 
 jobs:
   setup_avd:
