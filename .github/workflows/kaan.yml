@@ -3,7 +3,7 @@ name: Android AVD Setup
 on:
   push:
     branches:
-      - "*"
+      - master
 
 jobs:
   setup_avd:
@@ -12,30 +12,37 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Setup Environment and AVD
+      - name: Setup Java with SDKMAN
         run: |
-          # Install SDKMAN
           curl -s "https://get.sdkman.io" | bash
           source "$HOME/.sdkman/bin/sdkman-init.sh"
-          
-          # Setup Java with SDKMAN
           sdk install java 8.0.402-amzn
           sdk use java 8.0.402-amzn
-          
-          # Install Android SDK
-          sudo apt-get update
-          sudo apt-get install -y android-sdk
-          
-          # Set Environment Variables
-          echo "ANDROID_HOME=/usr/lib/android-sdk" >> $GITHUB_ENV
-          echo "$ANDROID_HOME/tools/bin" >> $GITHUB_PATH
-          echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
-          
-          # Install System Image and Create AVD
-          sudo $ANDROID_HOME/tools/bin/sdkmanager "system-images;android-24;default;x86"
-          echo "no" | sudo $ANDROID_HOME/tools/bin/avdmanager create avd --name maestro_shard_1 --abi "x86" --package "system-images;android-24;default;x86" --force
-          
-          # Launch Emulator
-          sudo $ANDROID_HOME/emulator/emulator -avd maestro_shard_1 -no-audio -no-boot-anim -no-window &
-          sleep 30 # Wait for emulator to start
 
+      - name: Cache Android SDK
+        uses: actions/cache@v2
+        with:
+          path: |
+            ${{ github.workspace }}/android-sdk
+          key: ${{ runner.os }}-android-sdk-24
+
+      - name: Setup Android SDK
+        run: |
+          if [ ! -d "${{ github.workspace }}/android-sdk" ]; then
+            wget -q "https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip" -O sdk.zip
+            unzip sdk.zip -d ${{ github.workspace }}/android-sdk
+            echo "${{ github.workspace }}/android-sdk/tools/bin" >> $GITHUB_PATH
+            echo "${{ github.workspace }}/android-sdk/platform-tools" >> $GITHUB_PATH
+            echo "ANDROID_HOME=${{ github.workspace }}/android-sdk" >> $GITHUB_ENV
+            yes | ${{ github.workspace }}/android-sdk/tools/bin/sdkmanager --licenses
+            ${{ github.workspace }}/android-sdk/tools/bin/sdkmanager "system-images;android-24;default;x86"
+          fi
+
+      - name: Create AVD
+        run: |
+          echo "no" | ${{ github.workspace }}/android-sdk/tools/bin/avdmanager create avd --name maestro_shard_1 --abi "x86" --package "system-images;android-24;default;x86" --force
+
+      - name: Launch Emulator
+        run: |
+          ${{ github.workspace }}/android-sdk/emulator/emulator -avd maestro_shard_1 -no-audio -no-boot-anim -no-window &
+          sleep 30 # Wait for emulator to start
