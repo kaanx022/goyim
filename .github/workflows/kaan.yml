@@ -15,8 +15,8 @@ jobs:
       - name: Setup JDK
         uses: actions/setup-java@v2
         with:
-          java-version: '8'
-          distribution: 'adopt'
+          java-version: '17'
+          distribution: 'oracle'
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v2
