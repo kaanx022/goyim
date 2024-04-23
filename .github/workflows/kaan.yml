@@ -12,34 +12,30 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Install SDKMAN and Java
+      - name: Setup Environment and AVD
         run: |
+          # Install SDKMAN
           curl -s "https://get.sdkman.io" | bash
           source "$HOME/.sdkman/bin/sdkman-init.sh"
+          
+          # Setup Java with SDKMAN
           sdk install java 8.0.402-amzn
           sdk use java 8.0.402-amzn
-
-      - name: Install Android SDK
-        run: |
+          
+          # Install Android SDK
           sudo apt-get update
           sudo apt-get install -y android-sdk
-
-      - name: Set Environment Variables
-        run: |
+          
+          # Set Environment Variables
           echo "ANDROID_HOME=/usr/lib/android-sdk" >> $GITHUB_ENV
           echo "$ANDROID_HOME/tools/bin" >> $GITHUB_PATH
           echo "$ANDROID_HOME/platform-tools" >> $GITHUB_PATH
-
-      - name: Install System Image and Create AVD
-        run: |
-          source "$HOME/.sdkman/bin/sdkman-init.sh"
-          sdk use java 8.0.402-amzn
+          
+          # Install System Image and Create AVD
           sudo $ANDROID_HOME/tools/bin/sdkmanager "system-images;android-24;default;x86"
           echo "no" | sudo $ANDROID_HOME/tools/bin/avdmanager create avd --name maestro_shard_1 --abi "x86" --package "system-images;android-24;default;x86" --force
-
-      - name: Launch Emulator
-        run: |
-          source "$HOME/.sdkman/bin/sdkman-init.sh"
-          sdk use java 8.0.402-amzn
+          
+          # Launch Emulator
           sudo $ANDROID_HOME/emulator/emulator -avd maestro_shard_1 -no-audio -no-boot-anim -no-window &
           sleep 30 # Wait for emulator to start
+
