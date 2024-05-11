@@ -1,37 +1,37 @@
-on:
-  push:
-    branches:
-      - "*"
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        api-level: [ 30, 33, 34 ]
-        target: [ default, google_apis ]
-    steps:
-      - name: Setup JDK
-        uses: actions/setup-java@v2
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-      - name: checkout
-        uses: actions/checkout@v4
-
-      - name: Enable KVM
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-
-      - name: run tests
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ matrix.api-level }}
-          target: ${{ matrix.target }}
-          arch: x86_64
-          profile: Nexus 6
-          script: -|
-            echo "Henlo my fren [ 1 ]"
-            echo "Henlo my fren [ 2 ]"
+#on:
+#  push:
+#    branches:
+#      - "*"
+#
+#jobs:
+#  test:
+#    runs-on: ubuntu-latest
+#    strategy:
+#      matrix:
+#        api-level: [ 30, 33, 34 ]
+#        target: [ default, google_apis ]
+#    steps:
+#      - name: Setup JDK
+#        uses: actions/setup-java@v2
+#        with:
+#          java-version: '11'
+#          distribution: 'temurin'
+#      - name: checkout
+#        uses: actions/checkout@v4
+#
+#      - name: Enable KVM
+#        run: |
+#          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+#          sudo udevadm control --reload-rules
+#          sudo udevadm trigger --name-match=kvm
+#
+#      - name: run tests
+#        uses: reactivecircus/android-emulator-runner@v2
+#        with:
+#          api-level: ${{ matrix.api-level }}
+#          target: ${{ matrix.target }}
+#          arch: x86_64
+#          profile: Nexus 6
+#          script: -|
+#            echo "Henlo my fren [ 1 ]"
+#            echo "Henlo my fren [ 2 ]"
