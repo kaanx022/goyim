@@ -1,9 +1,7 @@
 name: Android AVD Setup
 
-#on:
-#  push:
-#    branches:
-#      - "*"
+on:
+  workflow_dispatch:
 
 jobs:
   setup_avd:
