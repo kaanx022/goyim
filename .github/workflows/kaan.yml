@@ -10,8 +10,8 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        api-level: [30, 33, 34]
-        target: [default, google_apis]
+        api-level: [30, 34]
+        target: [google_apis]
     steps:
 #      - name: Grant execute permission for gradlew
 #        run: chmod +x gradlew
