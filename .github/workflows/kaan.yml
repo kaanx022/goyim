@@ -36,20 +36,30 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Run instrumentation tests
-        uses: ReactiveCircus/android-emulator-runner@v2.30.1
+      - name: Launch Emulator
+        uses: ReactiveCircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
           target: ${{ matrix.target }}
-          arch: arm64-v8a
-          profile: Nexus_6  # Ensure this profile is available and correct
-          disk-size: 6G
-          avd-name: kdrive-test
-          force-avd-creation: true
-          disable-animations: true
-          emulator-options: -no-snapshot-save -noaudio -no-boot-anim -camera-back none -skin 540x1110
-          script: echo "hello"
-#          target:  # ${{ matrix.target }}
+          arch: x86_64
+          profile: Nexus_6
+          emulator-options: -no-audio -no-boot-anim -no-window
+          script: |
+            echo "Starting emulator..."
+
+      - name: Check Emulator Status and Print Message
+        run: |
+          # Wait for emulator to start
+          adb wait-for-device
+          
+          # Poll for emulator status
+          until adb shell 'getprop sys.boot_completed' | grep -m 1 '1'; do
+            echo "Waiting for emulator to fully boot..."
+            sleep 15
+          done
+          
+          # Print a colorful message
+          echo -e "\033[0;32mEmulator is online and ready!\033[0m"
 
       - name: Run tests
         uses: reactivecircus/android-emulator-runner@v2
