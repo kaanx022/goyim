@@ -8,9 +8,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        api-level: [ 21, 23, 29, 30, 33, 34 ]
+        api-level: [ 28, 29, 30, 33, 34 ]
         target: [ default, google_apis ]
     steps:
+      - name: Setup JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: 'temurin'
       - name: checkout
         uses: actions/checkout@v4
 
