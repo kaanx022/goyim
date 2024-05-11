@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        api-level: [ 28, 29, 30, 33, 34 ]
+        api-level: [ 30, 33, 34 ]
         target: [ default, google_apis ]
     steps:
       - name: Setup JDK
