@@ -1,3 +1,61 @@
+name: Android CI
+
+on:
+  push:
+    branches:
+      - "*"
+
+concurrency:
+  group: ${{ github.head_ref }}
+  cancel-in-progress: true
+
+jobs:
+  instrumentation-tests:
+    if: github.event.pull_request.draft == false
+    runs-on: [ self-hosted, test ]
+    strategy:
+      matrix:
+        api-level: [ 33, 34 ]
+        target: [ google_apis ]
+
+    env:
+#      ENV_PATH: "app/src/androidTest/java/com/infomaniak/drive/utils/Env.kt"
+#      ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+#      DRIVE_ID: ${{ secrets.DRIVE_ID }}
+#      INVITE_USER_NAME: ${{ secrets.INVITE_USER_NAME }}
+#      NEW_USER_ID: ${{ secrets.NEW_USER_ID }}
+#      NEW_USER_NAME: ${{ secrets.NEW_USER_NAME }}
+#      NEW_USER_PASSWORD: ${{ secrets.NEW_USER_PASSWORD }}
+#      GENIUS_SCAN_ENV_PATH: "app/src/standard/java/com/infomaniak/drive/GeniusScanEnv.kt"
+#      GENIUS_SCAN_KEY: ${{ secrets.GENIUS_SCAN_KEY }}
+
+    steps:
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Run instrumentation tests
+        uses: ReactiveCircus/android-emulator-runner@v2.30.1
+        with:
+          api-level: ${{ matrix.api-level }}
+          target: ${{ matrix.target }}
+          profile: pixel_7
+          arch: arm64-v8a
+          disk-size: 6G
+          avd-name: kdrive-test
+          force-avd-creation: false
+          disable-animations: true
+          emulator-options: -no-snapshot-save -noaudio -no-boot-anim -camera-back none -skin 540x1110
+          script: echo "hello"
+
+
+
+
+
+
+
+
+
+
 #on:
 #  push:
 #    branches:
@@ -35,3 +93,10 @@
 #          script: -|
 #            echo "Henlo my fren [ 1 ]"
 #            echo "Henlo my fren [ 2 ]"
+#
+#
+
+
+
+
+
