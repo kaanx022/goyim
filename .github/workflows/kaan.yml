@@ -44,15 +44,26 @@ jobs:
           sdkmanager --install "system-images;android-34;google_apis;arm64-v8a"
           echo "no" | avdmanager create avd -n testAVD -k "system-images;android-34;google_apis;arm64-v8a" --force
   
-      - name: Launch and Monitor Emulator
-        run: |
-          $ANDROID_HOME/emulator/emulator -accel tcg,thread=multi -avd testAVD -no-audio -no-boot-anim -no-window -verbose &
-          EMULATOR_PID=$!
-          adb wait-for-device
-          until adb shell 'getprop sys.boot_completed' | grep -m 1 '1'; do
-            echo "Waiting for emulator to fully boot..."
-            sleep 15
-          done
-          echo -e "\033[0;32mEmulator is online and ready!\033[0m"
-          kill $EMULATOR_PID
-        timeout-minutes: 3
+#      - name: Run Emulator
+#        run: |
+#          $ANDROID_HOME/emulator/emulator -accel tcg,thread=multi -avd testAVD -no-audio -no-boot-anim -no-window -verbose &
+#          EMULATOR_PID=$!
+#          adb wait-for-device
+#          until adb shell 'getprop sys.boot_completed' | grep -m 1 '1'; do
+#            echo "Waiting for emulator to fully boot..."
+#            sleep 15
+#          done
+#          echo -e "\033[0;32mEmulator is online and ready!\033[0m"
+#          kill $EMULATOR_PID
+#        timeout-minutes: 3
+      - name: Run Emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 31
+          profile: Nexus 6
+          arch: arm64-v8a
+          force-avd-creation: false
+          avd-name: macOS-avd-arm64-v8a-31
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
+          script: echo "hi"
