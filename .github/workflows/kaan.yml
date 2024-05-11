@@ -10,11 +10,14 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        api-level: [30, 34]
-        target: [google_apis]
+        api-level: [34]
+        target: [default, google_apis]
     steps:
 #      - name: Grant execute permission for gradlew
 #        run: chmod +x gradlew
+      - name: Clear SDK Repository Cache
+        run: |
+          rm -rf $HOME/.android/cache
       - name: Setup JDK 17
         uses: actions/setup-java@v2
         with:
@@ -36,16 +39,24 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Launch Emulator
-        uses: ReactiveCircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ matrix.api-level }}
-          target: ${{ matrix.target }}
-          arch: x86_64
-          profile: Nexus_6
-          emulator-options: -no-audio -no-boot-anim -no-window
-          script: |
-            echo "Starting emulator..."
+      - name: Launch Emulator Manually
+        run: |
+          # Install necessary system images and create an AVD
+          echo "y" | sdkmanager "system-images;android-${{ matrix.api-level }};${{ matrix.target }};x86_64"
+          echo "no" | avdmanager create avd -n testAVD -k "system-images;android-${{ matrix.api-level }};${{ matrix.target }};x86_64" --force
+          # Start emulator
+          $ANDROID_HOME/emulator/emulator -avd testAVD -no-audio -no-boot-anim -no-window -verbose &
+          EMULATOR_PID=$!
+          # Wait for emulator to start
+          adb wait-for-device
+          # Check device status
+          until adb shell 'getprop sys.boot_completed' | grep -m 1 '1'; do
+            echo "Waiting for emulator to fully boot..."
+            sleep 15
+          done
+          echo "Emulator is online and ready!"
+        timeout-minutes: 2  # Specify a timeout to prevent hanging indefinitely
+
 
       - name: Check Emulator Status and Print Message
         run: |
