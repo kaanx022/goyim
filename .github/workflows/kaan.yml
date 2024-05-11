@@ -10,8 +10,8 @@ jobs:
     runs-on: macos-latest
     strategy:
       matrix:
-        api-level: [ 30, 33, 34 ]
-        target: [ default, google_apis ]
+        api-level: [30, 33, 34]
+        target: [default, google_apis]
     steps:
 #      - name: Grant execute permission for gradlew
 #        run: chmod +x gradlew
@@ -20,14 +20,17 @@ jobs:
         with:
           java-version: '8'
           distribution: "zulu"
+
       - name: Setup Android SDK
         uses: android-actions/setup-android@v2
         with:
           java-version: '8'
+
       - name: checkout
         uses: actions/checkout@v4
 
-      - name: Enable KVM
+      - name: Enable KVM (not applicable on macOS)
+        if: runner.os == 'Linux'
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
@@ -36,9 +39,10 @@ jobs:
       - name: Run instrumentation tests
         uses: ReactiveCircus/android-emulator-runner@v2.30.1
         with:
-          api-level: 30
-          profile: pixel_7
+          api-level: ${{ matrix.api-level }}
+          target: ${{ matrix.target }}
           arch: arm64-v8a
+          profile: Nexus_6  # Ensure this profile is available and correct
           disk-size: 6G
           avd-name: kdrive-test
           force-avd-creation: true
@@ -47,13 +51,13 @@ jobs:
           script: echo "hello"
 #          target:  # ${{ matrix.target }}
 
-      - name: run tests
+      - name: Run tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
           target: ${{ matrix.target }}
           arch: x86_64
-          profile: Nexus 6
+          profile: Nexus_6
           script: -|
             echo "Henlo my fren [ 1 ]"
             echo "Henlo my fren [ 2 ]"
