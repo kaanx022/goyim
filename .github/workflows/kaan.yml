@@ -1,46 +1,44 @@
-name: Android AVD Setup
+name: Android emulator
 
 on:
   push:
     branches:
       - "*"
 
+# Earlier it was;
+#on:
+#  workflow_dispatch:
+
+env:
+  ANDROID_ARCH: x86_64
+  ANDROID_TARGET: google_apis_playstore
+  API_LEVEL: 33
+  ANDROID_BUILD_TOOLS_VERSION: 33.0.2
+  ANDROID_SDK_PACKAGES: system-images;android-33;google_apis_playstore;x86_64 platforms;android-33 build-tools;33.0.2 platform-tools emulator
+  EMULATOR_TIMEOUT: 350
+  EMULATOR_NAME: nexus
+
 jobs:
-  setup_avd:
-    runs-on: ubuntu-latest
+  playwright-emulator:
+    timeout-minutes: 20
+    runs-on: macos-latest
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-      - name: Setup JDK
-        uses: actions/setup-java@v2
-        with:
-          java-version: '8'
-          distribution: 'temurin'
-
-#      - name: Setup Android SDK
-#        uses: android-actions/setup-android@v2
-
-
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v2
-        with:
-          java-version: '8'
-
-      - name: Set JAVA_HOME
+      - name: Add avdmanager and sdkmanager to system PATH
         run: |
-          echo "JAVA_HOME=${JAVA_HOME}" >> $GITHUB_ENV
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/emulator:$ANDROID_HOME/tools:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/${{ env.ANDROID_BUILD_TOOLS_VERSION }}" >> $GITHUB_PATH
 
-      - name: Install System Image and Create AVD
+      - name: Install Sdk
         run: |
-          # Ensure that the system image for Android API level 24 is available
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-24"
-          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "system-images;android-24;google_apis;x86"
+          yes Y | sdkmanager --licenses
+          sdkmanager --install ${ANDROID_SDK_PACKAGES}
 
-          # Create AVD
-          echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd --name maestro_shard_1 --abi "x86" --package "system-images;android-24;google_apis;x86" --force
-
-      - name: Launch Emulator
+      - name: Build emulator
         run: |
-          $ANDROID_HOME/emulator/emulator -avd maestro_shard_1 -no-audio -no-boot-anim -no-window &
-          sleep 30 # Wait for emulator to start
+          echo "no" | avdmanager --verbose create avd --force -n $EMULATOR_NAME --abi "${ANDROID_TARGET}/${ANDROID_ARCH}" -k "system-images;android-${API_LEVEL};${ANDROID_TARGET};${ANDROID_ARCH}"
+
+      - name: Launch emulator
+        run: |
+          chmod +x ./start_emu_headless.sh
+          EMULATOR_TIMEOUT=$EMULATOR_TIMEOUT EMULATOR_NAME=$EMULATOR_NAME ./start_emu_headless.sh

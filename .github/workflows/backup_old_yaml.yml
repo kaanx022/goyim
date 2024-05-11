@@ -1,0 +1,47 @@
+name: Android AVD Setup
+
+#on:
+#  push:
+#    branches:
+#      - "*"
+
+jobs:
+  setup_avd:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Setup JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+
+      #      - name: Setup Android SDK
+      #        uses: android-actions/setup-android@v2
+
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+        with:
+          java-version: '8'
+
+      - name: Set JAVA_HOME
+        run: |
+          echo "JAVA_HOME=${JAVA_HOME}" >> $GITHUB_ENV
+
+      - name: Install System Image and Create AVD
+        run: |
+          # Ensure that the system image for Android API level 24 is available
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platforms;android-24"
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "system-images;android-24;google_apis;x86"
+
+          # Create AVD
+          echo "no" | $ANDROID_HOME/cmdline-tools/latest/bin/avdmanager create avd --name maestro_shard_1 --abi "x86" --package "system-images;android-24;google_apis;x86" --force
+
+      - name: Launch Emulator
+        run: |
+          $ANDROID_HOME/emulator/emulator -avd maestro_shard_1 -no-audio -no-boot-anim -no-window &
+          sleep 30 # Wait for emulator to start
