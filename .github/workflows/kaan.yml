@@ -39,49 +39,34 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Launch Emulator Manually
+      - name: Install System Image and Create AVD
         run: |
-          # Install necessary system images and create an AVD
-          echo "y" | sdkmanager "system-images;android-${{ matrix.api-level }};${{ matrix.target }};x86_64"
-          echo "no" | avdmanager create avd -n testAVD -k "system-images;android-${{ matrix.api-level }};${{ matrix.target }};x86_64" --force
-          # Start emulator
-          $ANDROID_HOME/emulator/emulator -avd testAVD -no-audio -no-boot-anim -no-window -verbose &
-          EMULATOR_PID=$!
-          # Wait for emulator to start
-          adb wait-for-device
-          # Check device status
-          until adb shell 'getprop sys.boot_completed' | grep -m 1 '1'; do
-            echo "Waiting for emulator to fully boot..."
-            sleep 15
-          done
-          echo "Emulator is online and ready!"
-        timeout-minutes: 2  # Specify a timeout to prevent hanging indefinitely
+          sdkmanager --install "system-images;android-34;google_apis;arm64-v8a"
+          echo "no" | avdmanager create avd -n testAVD -k "system-images;android-34;google_apis;arm64-v8a" --force
+  
+          - name: Launch and Monitor Emulator
+            run: |
+              $ANDROID_HOME/emulator/emulator -avd testAVD -no-audio -no-boot-anim -no-window -verbose &
+              EMULATOR_PID=$!
+              adb wait-for-device
+              until adb shell 'getprop sys.boot_completed' | grep -m 1 '1'; do
+                echo "Waiting for emulator to fully boot..."
+                sleep 15
+              done
+              echo -e "\033[0;32mEmulator is online and ready!\033[0m"
+              kill $EMULATOR_PID
+            timeout-minutes: 15  # Increased timeout for emulator launch and setup
 
-
-      - name: Check Emulator Status and Print Message
-        run: |
-          # Wait for emulator to start
-          adb wait-for-device
-          
-          # Poll for emulator status
-          until adb shell 'getprop sys.boot_completed' | grep -m 1 '1'; do
-            echo "Waiting for emulator to fully boot..."
-            sleep 15
-          done
-          
-          # Print a colorful message
-          echo -e "\033[0;32mEmulator is online and ready!\033[0m"
-
-      - name: Run tests
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ matrix.api-level }}
-          target: ${{ matrix.target }}
-          arch: x86_64
-          profile: Nexus_6
-          script: -|
-            echo "Henlo my fren [ 1 ]"
-            echo "Henlo my fren [ 2 ]"
+#      - name: Run tests
+#        uses: reactivecircus/android-emulator-runner@v2
+#        with:
+#          api-level: ${{ matrix.api-level }}
+#          target: ${{ matrix.target }}
+#          arch: x86_64
+#          profile: Nexus_6
+#          script: -|
+#            echo "Henlo my fren [ 1 ]"
+#            echo "Henlo my fren [ 2 ]"
 
 
 
