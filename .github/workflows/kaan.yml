@@ -46,7 +46,7 @@ jobs:
   
       - name: Launch and Monitor Emulator
         run: |
-          $ANDROID_HOME/emulator/emulator -avd testAVD -no-audio -no-boot-anim -no-window -verbose &
+          $ANDROID_HOME/emulator/emulator -accel tcg,thread=multi -avd testAVD -no-audio -no-boot-anim -no-window -verbose &
           EMULATOR_PID=$!
           adb wait-for-device
           until adb shell 'getprop sys.boot_completed' | grep -m 1 '1'; do
@@ -55,22 +55,4 @@ jobs:
           done
           echo -e "\033[0;32mEmulator is online and ready!\033[0m"
           kill $EMULATOR_PID
-        timeout-minutes: 15  # Increased timeout for emulator launch and setup
-
-#      - name: Run tests
-#        uses: reactivecircus/android-emulator-runner@v2
-#        with:
-#          api-level: ${{ matrix.api-level }}
-#          target: ${{ matrix.target }}
-#          arch: x86_64
-#          profile: Nexus_6
-#          script: -|
-#            echo "Henlo my fren [ 1 ]"
-#            echo "Henlo my fren [ 2 ]"
-
-
-
-
-
-
-
+        timeout-minutes: 3
