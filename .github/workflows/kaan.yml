@@ -6,7 +6,7 @@ on:
       - "*"
 
 env:
-  ANDROID_ARCH: x86_64
+  ANDROID_ARCH: arm64-v8a
   ANDROID_TARGET: google_apis_playstore
   API_LEVEL: 33
   ANDROID_BUILD_TOOLS_VERSION: 33.0.2
@@ -29,7 +29,7 @@ jobs:
       - name: Install Sdk
         run: |
           yes Y | sdkmanager --licenses
-          sdkmanager --install ${ANDROID_SDK_PACKAGES}
+          sdkmanager --install ${ANDROID_SDK_PACKAGES} >/dev/null
 
       - name: Build emulator
         run: |
