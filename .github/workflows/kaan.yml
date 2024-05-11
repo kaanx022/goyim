@@ -5,11 +5,6 @@ on:
     branches:
       - "*"
 
-
-
-
-
-
 jobs:
   test:
     runs-on: macos-latest
@@ -18,8 +13,8 @@ jobs:
         api-level: [ 30, 33, 34 ]
         target: [ default, google_apis ]
     steps:
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+#      - name: Grant execute permission for gradlew
+#        run: chmod +x gradlew
       - name: Setup JDK
         uses: actions/setup-java@v2
         with:
