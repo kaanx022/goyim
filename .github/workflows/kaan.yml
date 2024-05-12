@@ -75,7 +75,7 @@ jobs:
           cores: 2
           disk-size: 6000M
           heap-size: 600M
-          script: ./main.sh # echo "hello" && sleep 30 && echo "\n\n\n\n.\n\n\n\n\n OK !! We are done"
+          script: bash main.sh # echo "hello" && sleep 30 && echo "\n\n\n\n.\n\n\n\n\n OK !! We are done"
         env:
           JAVA_HOME: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.11-9/x64
           JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.11-9/x64
