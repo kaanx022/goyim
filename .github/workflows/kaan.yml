@@ -11,9 +11,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        api-level: [30]   # 34 not working
-        target: [google_apis_playstore, google_apis, google_atd]
-        arch: [x86_64, x86]  # arm64-v8a not working
+        api-level: [30]       # 34
+        target: [google_atd]  # google_apis_playstore, google_apis,
+        arch: [x86_64]        # arm64-v8a, x86
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -70,7 +70,7 @@ jobs:
           cores: 2
           disk-size: 6000M
           heap-size: 600M
-          script: echo "hello" && sleep 30 && echo "\n\n\n\n.\n\n\n\n\n OK !! We are done"
+          script: ./main.sh # echo "hello" && sleep 30 && echo "\n\n\n\n.\n\n\n\n\n OK !! We are done"
         env:
           JAVA_HOME: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.11-9/x64
           JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.11-9/x64
