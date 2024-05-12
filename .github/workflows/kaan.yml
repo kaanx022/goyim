@@ -5,6 +5,9 @@ on:
     branches:
       - "*"
 
+env:
+  NUMBER_OF_SHARDS: 4  # Default number of shards/emulators
+
 jobs:
   test:
 #    runs-on: macos-latest   # Nothing on macos-latest works ??? wtf
@@ -15,7 +18,7 @@ jobs:
         api-level: [30]       # 34
         target: [google_atd]  # google_apis_playstore, google_apis,
         arch: [x86_64]        # arm64-v8a, x86
-        emulator-instance: ${{ fromJson(env.NUM_EMULATORS || '[1, 2, 3, 4]') }}
+        shard: [1, 2, 3, 4]
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -64,7 +67,7 @@ jobs:
           api-level: ${{ matrix.api-level }}
           target: ${{ matrix.target }}
           arch: ${{ matrix.arch }}
-          avd-name: "testAVD${{ matrix.emulator-instance }}"
+          avd-name: "testAVD${{ matrix.shard }}"
           force-avd-creation: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           disable-animations: true
