@@ -13,7 +13,7 @@ jobs:
       matrix:
         api-level: [30, 34]
         target: [google_apis_playstore, google_apis, google_atd]
-        arch: [arm64-v8a, x86_64, x86]
+        arch: [x86_64, x86]  # arm64-v8a
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -74,6 +74,6 @@ jobs:
         env:
           JAVA_HOME: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.11-9/x64
           JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Zulu_jdk/17.0.11-9/x64
-          GRADLE_BUILD_ACTION_SETUP_COMPLETED: true
-          GRADLE_BUILD_ACTION_CACHE_RESTORED: true
+#          GRADLE_BUILD_ACTION_SETUP_COMPLETED: true
+#          GRADLE_BUILD_ACTION_CACHE_RESTORED: true
 
