@@ -59,9 +59,9 @@ jobs:
       - name: Install System Image and Create AVD
         run: |
           sdkmanager --install "system-images;android-${{ matrix.api-level }};${{ matrix.target }};${{ matrix.arch }}"
-          echo "no" | avdmanager create avd -n "testAVD${{ matrix.emulator-instance }}" -k "system-images;android-${{ matrix.api-level }};${{ matrix.target }};${{ matrix.arch }}" --force
+          echo "no" | avdmanager create avd -n "testAVD${{ matrix.shard }}" -k "system-images;android-${{ matrix.api-level }};${{ matrix.target }};${{ matrix.arch }}" --force
 
-      - name: Run Emulator and Execute Tests
+      - name: Start Emulators
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: ${{ matrix.api-level }}
