@@ -23,16 +23,16 @@ jobs:
           sudo apt-get install -y openjdk-17-jdk
           wget https://dl.google.com/android/repository/commandlinetools-linux-6609375_latest.zip
           unzip commandlinetools-linux-6609375_latest.zip -d cmdline-tools
-          export PATH=$PATH:$(pwd)/cmdline-tools/tools/bin
-          yes | sdkmanager --licenses
-          sdkmanager "platform-tools" "platforms;android-30" "system-images;android-30;google_apis;x86_64"
-          export ANDROID_HOME=$(pwd)/cmdline-tools
+          echo "ANDROID_HOME=$PWD/cmdline-tools" >> $GITHUB_ENV
+          echo "$PWD/cmdline-tools/tools/bin" >> $GITHUB_PATH
+          yes | cmdline-tools/tools/bin/sdkmanager --licenses
+          cmdline-tools/tools/bin/sdkmanager "platform-tools" "platforms;android-30" "system-images;android-30;google_apis;x86_64"
 
       - name: Start Emulators and Poll for Readiness
         run: |
           for i in {1..4}
           do
-            echo "no" | avdmanager create avd -n "testAVD$i" -k "system-images;android-30;google_apis;x86_64" --force
+            echo "no" | cmdline-tools/tools/bin/avdmanager create avd -n "testAVD$i" -k "system-images;android-30;google_apis;x86_64" --force
             emulator -avd "testAVD$i" -no-audio -no-window -no-boot-anim &
           done
           # Wait for devices to get connected
