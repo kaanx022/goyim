@@ -49,12 +49,13 @@ jobs:
           echo "kaankaankaan1"
           for i in {1..4}
           do
+            echo "Creating AVD testAVD$i..."
             echo "no" | avdmanager create avd -n "testAVD$i" -k "system-images;android-30;google_apis;x86_64" --force
+            echo "Starting emulator for testAVD$i..."
             nohup emulator -avd "testAVD$i" -no-audio -no-window -no-boot-anim -no-snapshot-load -no-snapshot-save -wipe-data > /dev/null 2>&1 &
           done
           echo "kaankaankaan2"
           sleep 30
-          adb wait-for-device
           for i in {5554..5558..2} # Loop from 5554 to 5558 stepping by 2 each time
           do
             until adb -s emulator-$i shell 'getprop sys.boot_completed' | grep -m 1 '1'; do
