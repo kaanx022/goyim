@@ -32,43 +32,33 @@ jobs:
         uses: android-actions/setup-android@v2
         with:
           java-version: '17'
+
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3.3.2
 
-      - name: checkout
-        uses: actions/checkout@v4
-
-      - name: Enable KVM (not applicable on macOS)
+      - name: Enable KVM
         if: runner.os == 'Linux'
         run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-      - name: Enable KVM
-        run: |
-          sudo apt-get update
-          sudo apt-get install qemu-kvm
+          sudo apt-get install -y qemu-kvm
           sudo adduser $USER kvm
           sudo chmod 666 /dev/kvm
 
-      - name: Start Emulators and Check Readiness
+      - name: Create and Start Emulators
         run: |
-          sdkmanager --install "emulator"
+          sdkmanager --install "emulator" "system-images;android-30;google_apis;x86_64"
           for i in {1..4}
           do
             echo "no" | avdmanager create avd -n "testAVD$i" -k "system-images;android-30;google_apis;x86_64" --force
-            $ANDROID_HOME/emulator/emulator -avd "testAVD$i" -no-audio -no-window -no-boot-anim &
+            emulator -avd "testAVD$i" -no-audio -no-window -no-boot-anim &
           done
           sleep 30
           adb wait-for-device
-          let port=5554
-          for i in {1..4}
+          for i in {5554..5558..2} # Loop from 5554 to 5558 stepping by 2 each time
           do
-            until adb -s emulator-$port shell 'getprop sys.boot_completed' | grep -m 1 '1'; do
-              echo "Waiting for emulator-$port to fully boot..."
+            until adb -s emulator-$i shell 'getprop sys.boot_completed' | grep -m 1 '1'; do
+              echo "Waiting for emulator-$i to fully boot..."
               sleep 10
             done
-            let port+=2
           done
           echo "All emulators are ready."
 
