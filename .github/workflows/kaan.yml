@@ -55,7 +55,6 @@ jobs:
             nohup emulator -avd "testAVD$i" -no-audio -no-window -no-boot-anim -no-snapshot-load -no-snapshot-save -wipe-data > /dev/null 2>&1 &
           done
           echo "kaankaankaan2"
-          sleep 30
           for i in {5554..5558..2} # Loop from 5554 to 5558 stepping by 2 each time
           do
             until adb -s emulator-$i shell 'getprop sys.boot_completed' | grep -m 1 '1'; do
@@ -69,7 +68,8 @@ jobs:
       - name: Display Emulators (Debugging)
         if: always()
         run: |
-          adb devices
+          mkdir -p /home/runner/.maestro && touch /home/runner/.maestro/sessions
+          echo "The devices are: $(adb devices)"
 
       - name: Execute Control Script
         run: |
