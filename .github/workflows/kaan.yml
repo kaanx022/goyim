@@ -9,7 +9,7 @@ env:
   NUMBER_OF_SHARDS: 4  # Default number of shards/emulators
 
 jobs:
-  test:
+  setup-emulators:
 #    runs-on: macos-latest   # Nothing on macos-latest works ??? wtf
     runs-on: ubuntu-latest
     strategy:
