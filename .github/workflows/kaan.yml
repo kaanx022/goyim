@@ -10,10 +10,12 @@ jobs:
 #    runs-on: macos-latest   # Nothing on macos-latest works ??? wtf
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         api-level: [30]       # 34
         target: [google_atd]  # google_apis_playstore, google_apis,
         arch: [x86_64]        # arm64-v8a, x86
+        emulator-instance: ${{ fromJson(env.NUM_EMULATORS || '[1, 2, 3, 4]') }}
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -54,7 +56,7 @@ jobs:
       - name: Install System Image and Create AVD
         run: |
           sdkmanager --install "system-images;android-${{ matrix.api-level }};${{ matrix.target }};${{ matrix.arch }}"
-          echo "no" | avdmanager create avd -n testAVD -k "system-images;android-${{ matrix.api-level }};${{ matrix.target }};${{ matrix.arch }}" --force
+          echo "no" | avdmanager create avd -n "testAVD${{ matrix.emulator-instance }}" -k "system-images;android-${{ matrix.api-level }};${{ matrix.target }};${{ matrix.arch }}" --force
 
       - name: Run Emulator and Execute Tests
         uses: reactivecircus/android-emulator-runner@v2
@@ -62,7 +64,7 @@ jobs:
           api-level: ${{ matrix.api-level }}
           target: ${{ matrix.target }}
           arch: ${{ matrix.arch }}
-          avd-name: testAVD5
+          avd-name: "testAVD${{ matrix.emulator-instance }}"
           force-avd-creation: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           disable-animations: true
