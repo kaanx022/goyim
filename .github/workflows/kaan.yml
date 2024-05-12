@@ -24,24 +24,25 @@ jobs:
           wget https://dl.google.com/android/repository/commandlinetools-linux-6609375_latest.zip
           unzip commandlinetools-linux-6609375_latest.zip -d cmdline-tools
           echo "ANDROID_HOME=$PWD/cmdline-tools" >> $GITHUB_ENV
-          echo "$PWD/cmdline-tools/tools/bin" >> $GITHUB_PATH
+          echo "$PWD/cmdline-tools/tools/bin:$PWD/cmdline-tools/emulator:$PWD/cmdline-tools/platform-tools" >> $GITHUB_PATH
           yes | cmdline-tools/tools/bin/sdkmanager --licenses
           cmdline-tools/tools/bin/sdkmanager "platform-tools" "platforms;android-30" "system-images;android-30;google_apis;x86_64"
 
       - name: Start Emulators and Poll for Readiness
         run: |
+          cmdline-tools/tools/bin/sdkmanager --install "emulator"
           for i in {1..4}
           do
             echo "no" | cmdline-tools/tools/bin/avdmanager create avd -n "testAVD$i" -k "system-images;android-30;google_apis;x86_64" --force
-            emulator -avd "testAVD$i" -no-audio -no-window -no-boot-anim &
+            cmdline-tools/emulator/emulator -avd "testAVD$i" -no-audio -no-window -no-boot-anim &
           done
           # Wait for devices to get connected
-          adb wait-for-device
+          cmdline-tools/platform-tools/adb wait-for-device
           # Polling for device readiness
           let port=5554  # Starting port number for adb connections
           for i in {1..4}
           do
-            until adb -s emulator-$port shell 'getprop sys.boot_completed' | grep -m 1 '1'; do
+            until cmdline-tools/platform-tools/adb -s emulator-$port shell 'getprop sys.boot_completed' | grep -m 1 '1'; do
               echo "Waiting for emulator-$port to fully boot..."
               sleep 10
             done
@@ -56,4 +57,4 @@ jobs:
       - name: Cleanup Emulators
         if: always()
         run: |
-          adb devices | grep emulator | cut -f1 | while read line; do adb -s $line emu kill; done
+          cmdline-tools/platform-tools/adb devices | grep emulator | cut -f1 | while read line; do cmdline-tools/platform-tools/adb -s $line emu kill; done
