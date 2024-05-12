@@ -36,4 +36,4 @@ ls -la
 
 # 5. Executing the Maestro executable
 echo "Running the Maestro executable:"
-bash ./maestro test ./ -s 4
+bash ./maestro/maestro test ./ -s 4
