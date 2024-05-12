@@ -12,7 +12,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Dependencies and Tools
+      - name: Install Dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils
@@ -24,29 +24,29 @@ jobs:
           wget https://dl.google.com/android/repository/commandlinetools-linux-6609375_latest.zip
           unzip commandlinetools-linux-6609375_latest.zip -d cmdline-tools
           echo "ANDROID_HOME=$PWD/cmdline-tools" >> $GITHUB_ENV
-          echo "$PWD/cmdline-tools/tools/bin:$PWD/cmdline-tools/emulator:$PWD/cmdline-tools/platform-tools" >> $GITHUB_PATH
-          yes | cmdline-tools/tools/bin/sdkmanager --licenses
-          cmdline-tools/tools/bin/sdkmanager "platform-tools" "platforms;android-30" "system-images;android-30;google_apis;x86_64"
+          echo "PATH=$PATH:$PWD/cmdline-tools/cmdline-tools/bin:$PWD/cmdline-tools/emulator:$PWD/cmdline-tools/platform-tools" >> $GITHUB_ENV
+          source $GITHUB_ENV
+          sdkmanager --licenses
+          sdkmanager "platform-tools" "platforms;android-30" "system-images;android-30;google_apis;x86_64"
 
-      - name: Start Emulators and Poll for Readiness
+      - name: Start Emulators and Check Readiness
         run: |
-          cmdline-tools/tools/bin/sdkmanager --install "emulator"
+          sdkmanager --install "emulator"
           for i in {1..4}
           do
-            echo "no" | cmdline-tools/tools/bin/avdmanager create avd -n "testAVD$i" -k "system-images;android-30;google_apis;x86_64" --force
-            cmdline-tools/emulator/emulator -avd "testAVD$i" -no-audio -no-window -no-boot-anim &
+            echo "no" | avdmanager create avd -n "testAVD$i" -k "system-images;android-30;google_apis;x86_64" --force
+            $ANDROID_HOME/emulator/emulator -avd "testAVD$i" -no-audio -no-window -no-boot-anim &
           done
-          # Wait for devices to get connected
-          cmdline-tools/platform-tools/adb wait-for-device
-          # Polling for device readiness
-          let port=5554  # Starting port number for adb connections
+          sleep 30
+          adb wait-for-device
+          let port=5554
           for i in {1..4}
           do
-            until cmdline-tools/platform-tools/adb -s emulator-$port shell 'getprop sys.boot_completed' | grep -m 1 '1'; do
+            until adb -s emulator-$port shell 'getprop sys.boot_completed' | grep -m 1 '1'; do
               echo "Waiting for emulator-$port to fully boot..."
               sleep 10
             done
-            let port+=2  # Increment by 2 for the next emulator
+            let port+=2
           done
           echo "All emulators are ready."
 
@@ -57,4 +57,4 @@ jobs:
       - name: Cleanup Emulators
         if: always()
         run: |
-          cmdline-tools/platform-tools/adb devices | grep emulator | cut -f1 | while read line; do cmdline-tools/platform-tools/adb -s $line emu kill; done
+          adb devices | grep emulator | cut -f1 | while read line; do adb -s $line emu kill; done
