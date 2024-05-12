@@ -42,14 +42,14 @@ jobs:
           sudo apt-get install -y qemu-kvm
           sudo adduser $USER kvm
           sudo chmod 666 /dev/kvm
-
       - name: Create and Start Emulators
         run: |
           sdkmanager --install "emulator" "system-images;android-30;google_apis;x86_64"
+          export PATH=$ANDROID_HOME/emulator:$PATH
           for i in {1..4}
           do
             echo "no" | avdmanager create avd -n "testAVD$i" -k "system-images;android-30;google_apis;x86_64" --force
-            emulator -avd "testAVD$i" -no-audio -no-window -no-boot-anim &
+            nohup emulator -avd "testAVD$i" -no-audio -no-window -no-boot-anim &
           done
           sleep 30
           adb wait-for-device
