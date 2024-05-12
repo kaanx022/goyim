@@ -46,11 +46,13 @@ jobs:
         run: |
           sdkmanager --install "emulator" "system-images;android-30;google_apis;x86_64"
           export PATH=$ANDROID_HOME/emulator:$PATH
+          echo "kaankaankaan1"
           for i in {1..4}
           do
             echo "no" | avdmanager create avd -n "testAVD$i" -k "system-images;android-30;google_apis;x86_64" --force
-            nohup emulator -avd "testAVD$i" -no-audio -no-window -no-boot-anim &
+            nohup emulator -avd "testAVD$i" -no-audio -no-window -no-boot-anim -no-snapshot-load -no-snapshot-save -wipe-data > /dev/null 2>&1 &
           done
+          echo "kaankaankaan2"
           sleep 30
           adb wait-for-device
           for i in {5554..5558..2} # Loop from 5554 to 5558 stepping by 2 each time
@@ -61,6 +63,12 @@ jobs:
             done
           done
           echo "All emulators are ready."
+
+
+      - name: Display Emulators (Debugging)
+        if: always()
+        run: |
+          adb devices
 
       - name: Execute Control Script
         run: |
