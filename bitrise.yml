@@ -21,6 +21,8 @@ workflows:
             - content: |-
                 #!/bin/bash
                 set -ex
+                
+                echo "!    ---------------------- Kaan ------------------------ !" 
                 sudo apt-get update
                 sudo apt-get install -y qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils
                 sudo adduser $USER kvm
