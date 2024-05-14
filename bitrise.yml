@@ -1,0 +1,101 @@
+format_version: "11"
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+
+app:
+  envs:
+    - opts:
+        is_expand: false
+      JAVA_VERSION: "17"
+
+workflows:
+  primary:
+    steps:
+      - activate-ssh-key@4:
+          run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+
+      - git-clone@6: {}
+
+      - script@1:
+          title: Install Dependencies
+          inputs:
+            - content: |-
+                #!/bin/bash
+                set -ex
+                sudo apt-get update
+                sudo apt-get install -y qemu-kvm libvirt-daemon-system libvirt-clients bridge-utils
+                sudo adduser $USER kvm
+
+      - script@1:
+          title: Clear SDK Repository Cache
+          inputs:
+            - content: |-
+                #!/bin/bash
+                set -ex
+                rm -rf $HOME/.android/cache
+
+      - install-missing-android-tools@2:
+          inputs:
+            - gradlew_path: "$PROJECT_LOCATION/gradlew"
+
+      - change-android-version@1:
+          inputs:
+            - version: "$JAVA_VERSION"
+
+      - android-emulator-create-and-start@1:
+          inputs:
+            - android_version: "30"
+            - tag: "google_apis"
+            - abi: "x86_64"
+            - profile: "Nexus 5X"
+            - id: "testAVD"
+
+      - wait-for-android-emulator@1: {}
+
+      - script@1:
+          title: Create and Start Emulators
+          inputs:
+            - content: |-
+                #!/bin/bash
+                set -ex
+                echo "kaankaankaan1"
+                for i in {1..4}
+                do
+                  echo "Creating AVD testAVD$i..."
+                  echo "no" | avdmanager create avd -n "testAVD$i" -k "system-images;android-30;google_apis;x86_64" --force
+                  echo "Starting emulator for testAVD$i..."
+                  nohup emulator -avd "testAVD$i" -no-audio -no-window -no-boot-anim -no-snapshot-load -no-snapshot-save -wipe-data > /dev/null 2>&1 &
+                done
+                echo "kaankaankaan2"
+                for i in {5554..5558..2}
+                do
+                  until adb -s emulator-$i shell 'getprop sys.boot_completed' | grep -m 1 '1'; do
+                    echo "Waiting for emulator-$i to fully boot..."
+                    sleep 10
+                  done
+                done
+                echo "All emulators are ready."
+
+      - script@1:
+          title: Display Emulators (Debugging)
+          inputs:
+            - content: |-
+                #!/bin/bash
+                set -ex
+                mkdir -p /home/runner/.maestro && touch /home/runner/.maestro/sessions
+                echo "The devices are: $(adb devices)"
+
+      - script@1:
+          title: Execute Control Script
+          inputs:
+            - content: |-
+                #!/bin/bash
+                set -ex
+                bash main.sh
+
+      - script@1:
+          title: Cleanup Emulators
+          inputs:
+            - content: |-
+                #!/bin/bash
+                set -ex
+                adb devices | grep emulator | cut -f1 | while read line; do adb -s $line emu kill; done
